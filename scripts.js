@@ -58,7 +58,8 @@ function Section(x,y) {
 }
 function renderSection(section){
 	/* tu trzeba narysowac moduł */ 
-	ctx.fillStyle = "#A5BE00";
+	ctx.fillStyle = section.head ? "#FF331F" : "#A5BE00";
+	
 	ctx.fillRect (offsetX+section.x*cellSize,offsetY+section.y*cellSize,cellSize,cellSize);
 }
 function move(directionOverwrite) {
@@ -67,11 +68,16 @@ function move(directionOverwrite) {
 	if(snake.direction === 'left') x--;
 	if(snake.direction === 'down') y++;
 	if(snake.direction === 'up') y--;
-	const finalDirection = directionOverwrite || snake.direction;
+
+		for(const el of snake.sections){
+			if(el.x === x && el.y === y) gameover();
+		}
 	// dodać głowę
 	snake.addHead(x,y);
 	// usunąć ogon
 	snake.removeTail(x,y);
+
+	//const finalDirection = directionOverwrite || snake.direction;
 }
 
 const stats = {
@@ -87,8 +93,13 @@ function step(){
 	board.render()
 	// narysować wonsza
 	snake.render();
-	// zrobic timeout
-	setTimeout(step,33*(1/stats.speed));
+	// zrobic 
+	
+
+	//Speed of wonsz
+
+ 
+	if(gameOngoing) timeoutID = setTimeout(step,100*(1/stats.speed));
 }
 
 function init(){
@@ -97,6 +108,8 @@ function init(){
 	// narysowac wonsza
 	let x = Math.floor(board.width/2)
 	let y = Math.floor(board.height/2)
+
+	snake.addHead(x-5,y);
 	snake.addHead(x-4,y);
 	snake.addHead(x-3,y);
 	snake.addHead(x-2,y);
@@ -104,6 +117,49 @@ function init(){
 	snake.addHead(x,y);
 	board.render();
 	snake.render();
+
+
 }
 
 init();
+
+let gameOngoing = false;
+
+function arrow(direction){
+	if(direction === "ArrowUp" && snake.direction !== "down"){
+		snake.direction = "up";
+	}
+	if(direction === "ArrowDown" && snake.direction !== "up"){
+		snake.direction = "down";
+	}
+	if(direction === "ArrowLeft" && snake.direction !== "right"){
+		snake.direction = "left";
+	}
+	if(direction === "ArrowRight" && snake.direction !== "left"){
+		snake.direction = "right";
+	}
+}
+
+window.addEventListener("keydown", e =>{
+	if(event.code === "Space" && !gameOngoing){
+		gameOngoing = true;
+		step();
+	}
+
+	if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.code))
+		arrow(e.code);
+	this.console.log(event.code);
+
+	})
+
+
+	function gameover(){
+		clearTimeout(timeoutID);
+		canvas.remove();
+		gameOngoing - false;
+		const iframe = `<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/BhB2ZcXWJDk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+		const el = document.createElement("div");
+		el.id = "game";
+		el.innerHTML = iframe;
+		document.querySelector("#wrap").appendChild(el);
+	}
